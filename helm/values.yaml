@@ -1,0 +1,166 @@
+# Default values for payment-core-service Helm chart
+
+# Replica count
+replicaCount: 3
+
+# Image configuration
+image:
+  repository: payment-core-service
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# Service Account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# Pod annotations
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+  prometheus.io/path: "/actuator/prometheus"
+
+# Pod Security Context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+# Container Security Context
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+  hosts:
+    - host: payment-api.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: payment-api-tls
+      hosts:
+        - payment-api.example.com
+
+# Resource limits and requests
+resources:
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+  requests:
+    cpu: 500m
+    memory: 256Mi
+
+# Autoscaling
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+# Health checks
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 2
+
+# Node affinity
+nodeSelector:
+  workload: payment-processing
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - payment-core-service
+          topologyKey: kubernetes.io/hostname
+
+# Environment variables
+env:
+  SPRING_PROFILES_ACTIVE: prod
+  LOG_LEVEL: INFO
+
+# Secrets (referenced from Kubernetes secrets)
+secrets:
+  - name: DATABASE_URL
+    key: url
+  - name: DATABASE_USER
+    key: user
+  - name: DATABASE_PASSWORD
+    key: password
+
+# Volume mounts for temporary files
+volumeMounts:
+  - name: tmp
+    mountPath: /tmp
+  - name: cache
+    mountPath: /app/cache
+
+volumes:
+  - name: tmp
+    emptyDir: {}
+  - name: cache
+    emptyDir: {}
+
+# Database configuration
+database:
+  enabled: true
+  host: postgres
+  port: 5432
+  name: payment_core
+
+# Kafka configuration
+kafka:
+  enabled: true
+  bootstrapServers: kafka:9092
+  topics:
+    payments: payment.events
+    settlements: settlement.events
+
+# Redis configuration
+redis:
+  enabled: true
+  host: redis
+  port: 6379

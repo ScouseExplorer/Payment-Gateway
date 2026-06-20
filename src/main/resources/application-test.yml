@@ -1,0 +1,24 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  datasource:
+    url: jdbc:postgresql://localhost:5432/payment_core_test
+    username: testuser
+    password: testpass
+  kafka:
+    bootstrap-servers: localhost:9092
+  redis:
+    host: localhost
+    port: 6379
+
+logging:
+  level:
+    root: WARN
+    com.gateway.core: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics

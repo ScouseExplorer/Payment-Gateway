@@ -1,0 +1,43 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  datasource:
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+  kafka:
+    producer:
+      acks: all
+      retries: 5
+  redis:
+    lettuce:
+      pool:
+        max-active: 50
+
+server:
+  compression:
+    enabled: true
+    min-response-size: 1024
+
+logging:
+  level:
+    root: INFO
+    com.gateway.core: INFO
+  file:
+    name: /var/log/payment-core/application.log
+    max-size: 100MB
+    max-history: 30
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true

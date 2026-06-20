@@ -1,0 +1,19 @@
+apiVersion: v2
+name: payment-core-service
+description: A Helm chart for Payment Core Service
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - payment
+  - gateway
+  - processing
+
+home: https://github.com/your-org/payment-core-service
+sources:
+  - https://github.com/your-org/payment-core-service
+
+maintainers:
+  - name: Your Organization
+    email: dev@your-org.com
