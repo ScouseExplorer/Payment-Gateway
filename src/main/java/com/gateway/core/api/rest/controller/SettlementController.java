@@ -1,7 +1,9 @@
 package com.gateway.core.api.rest.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,29 +31,27 @@ import org.springframework.web.bind.annotation.RestController;
 public class SettlementController {
 
     /**
-     * Process settlement for a batch of transactions.
+     * NOT YET IMPLEMENTED: settlement is Stage 7 and depends on the ledger
+     * (Stage 2) being in place first. Returns 501 rather than a false 200 OK.
      */
     @PostMapping
     public ResponseEntity<?> processSettlement() {
-        // Implementation here
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
 
     /**
-     * Get settlement status and details.
+     * NOT YET IMPLEMENTED: see {@link #processSettlement}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<?> getSettlement(String id) {
-        // Implementation here
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> getSettlement(@PathVariable String id) {
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
 
     /**
-     * Get reconciliation report for a settlement.
+     * NOT YET IMPLEMENTED: see {@link #processSettlement}.
      */
     @GetMapping("/{id}/reconciliation")
-    public ResponseEntity<?> getReconciliation(String id) {
-        // Implementation here
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> getReconciliation(@PathVariable String id) {
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
 }

@@ -1,8 +1,7 @@
-package com.gateway.core.application.command;
+package com.gateway.core.application.query;
 
 import com.gateway.core.domain.model.Merchant;
 import com.gateway.core.domain.model.Payment;
-import com.gateway.core.domain.service.PaymentProcessor;
 import com.gateway.core.exception.PaymentNotFoundException;
 import com.gateway.core.infrastructure.database.entity.PaymentEntity;
 import com.gateway.core.infrastructure.database.mapper.MerchantMapper;
@@ -13,31 +12,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Handles {@link CancelPaymentCommand}: cancels a pending or authorized payment.
+ * Read-only lookups for payments (the "Q" side of CQRS for Stage 1).
  */
 @Service
-public class CancelPaymentHandler {
+public class PaymentQueryService {
 
     private final PaymentRepository paymentRepository;
     private final MerchantRepository merchantRepository;
-    private final PaymentProcessor paymentProcessor;
 
-    public CancelPaymentHandler(PaymentRepository paymentRepository, MerchantRepository merchantRepository,
-                                 PaymentProcessor paymentProcessor) {
+    public PaymentQueryService(PaymentRepository paymentRepository, MerchantRepository merchantRepository) {
         this.paymentRepository = paymentRepository;
         this.merchantRepository = merchantRepository;
-        this.paymentProcessor = paymentProcessor;
     }
 
-    @Transactional
-    public Payment handle(CancelPaymentCommand command) {
-        PaymentEntity entity = paymentRepository.findById(command.getPaymentId())
-                .orElseThrow(() -> new PaymentNotFoundException(command.getPaymentId()));
+    @Transactional(readOnly = true)
+    public Payment getPayment(String paymentId) {
+        PaymentEntity entity = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new PaymentNotFoundException(paymentId));
         Merchant merchant = MerchantMapper.toDomain(merchantRepository.getReferenceById(entity.getMerchantId()));
-
-        Payment payment = PaymentMapper.toDomain(entity, merchant);
-        paymentProcessor.cancelPayment(payment);
-        paymentRepository.save(PaymentMapper.toEntity(payment));
-        return payment;
+        return PaymentMapper.toDomain(entity, merchant);
     }
 }

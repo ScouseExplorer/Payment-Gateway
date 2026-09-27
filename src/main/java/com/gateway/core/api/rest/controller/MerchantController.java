@@ -1,7 +1,14 @@
 package com.gateway.core.api.rest.controller;
 
+import com.gateway.core.api.rest.request.CreateMerchantRequest;
+import com.gateway.core.api.rest.response.MerchantResponse;
+import com.gateway.core.application.service.MerchantService;
+import com.gateway.core.domain.model.Merchant;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,19 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Merchant Controller
  * 
- * Manages merchant accounts and configurations:
- * - Merchant registration and onboarding
- * - Account configuration management
- * - MCC (Merchant Category Code) settings
- * - Settlement account details
- * - API key and credential management
- * - Transaction limits and rules
+ * Manages merchant accounts (Stage 1: registration and lookup only).
+ * API key issuance, settlement configuration and limits are Stage 3+ concerns.
  * 
  * REST Endpoints:
  * POST   /api/merchants            - Register a new merchant
  * GET    /api/merchants/{id}       - Get merchant details
- * PUT    /api/merchants/{id}       - Update merchant configuration
- * GET    /api/merchants/{id}/settings - Get merchant settings
  * 
  * @author Payment Team
  */
@@ -30,30 +30,28 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/merchants")
 public class MerchantController {
 
+    private final MerchantService merchantService;
+
+    public MerchantController(MerchantService merchantService) {
+        this.merchantService = merchantService;
+    }
+
     /**
      * Register a new merchant.
      */
     @PostMapping
-    public ResponseEntity<?> registerMerchant(@RequestBody Object request) {
-        // Implementation here
-        return ResponseEntity.ok().build();
+    public ResponseEntity<MerchantResponse> registerMerchant(@Valid @RequestBody CreateMerchantRequest request) {
+        Merchant merchant = merchantService.register(new Merchant(request.getMerchantId(), request.getName(),
+                request.getMcc(), request.getBankAccount(), request.getActive()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(MerchantResponse.from(merchant));
     }
 
     /**
-     * Get merchant details and configuration.
+     * Get merchant details.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<?> getMerchant(String id) {
-        // Implementation here
-        return ResponseEntity.ok().build();
-    }
-
-    /**
-     * Get merchant settings and preferences.
-     */
-    @GetMapping("/{id}/settings")
-    public ResponseEntity<?> getMerchantSettings(String id) {
-        // Implementation here
-        return ResponseEntity.ok().build();
+    public ResponseEntity<MerchantResponse> getMerchant(@PathVariable String id) {
+        return ResponseEntity.ok(MerchantResponse.from(merchantService.getMerchant(id)));
     }
 }
+

@@ -13,30 +13,30 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Handles {@link CancelPaymentCommand}: cancels a pending or authorized payment.
+ * Handles {@link CapturePaymentCommand}: captures a previously authorized payment.
  */
 @Service
-public class CancelPaymentHandler {
+public class CapturePaymentHandler {
 
     private final PaymentRepository paymentRepository;
     private final MerchantRepository merchantRepository;
     private final PaymentProcessor paymentProcessor;
 
-    public CancelPaymentHandler(PaymentRepository paymentRepository, MerchantRepository merchantRepository,
-                                 PaymentProcessor paymentProcessor) {
+    public CapturePaymentHandler(PaymentRepository paymentRepository, MerchantRepository merchantRepository,
+                                  PaymentProcessor paymentProcessor) {
         this.paymentRepository = paymentRepository;
         this.merchantRepository = merchantRepository;
         this.paymentProcessor = paymentProcessor;
     }
 
     @Transactional
-    public Payment handle(CancelPaymentCommand command) {
+    public Payment handle(CapturePaymentCommand command) {
         PaymentEntity entity = paymentRepository.findById(command.getPaymentId())
                 .orElseThrow(() -> new PaymentNotFoundException(command.getPaymentId()));
         Merchant merchant = MerchantMapper.toDomain(merchantRepository.getReferenceById(entity.getMerchantId()));
 
         Payment payment = PaymentMapper.toDomain(entity, merchant);
-        paymentProcessor.cancelPayment(payment);
+        paymentProcessor.capturePayment(payment);
         paymentRepository.save(PaymentMapper.toEntity(payment));
         return payment;
     }

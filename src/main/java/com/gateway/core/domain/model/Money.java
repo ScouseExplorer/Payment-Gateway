@@ -20,6 +20,9 @@ public class Money {
     private final Currency currency;
     
     public Money(Long amount, Currency currency) {
+        if (amount == null || currency == null) {
+            throw new IllegalArgumentException("amount and currency are required");
+        }
         this.amount = amount;
         this.currency = currency;
     }
@@ -36,16 +39,34 @@ public class Money {
      * Add another Money amount (must be same currency).
      */
     public Money add(Money other) {
-        // Validate currency matches
-        // Perform addition
+        requireSameCurrency(other);
         return new Money(this.amount + other.amount, this.currency);
     }
     
     /**
-     * Subtract another Money amount.
+     * Subtract another Money amount (must be same currency).
      */
     public Money subtract(Money other) {
-        // Implementation
+        requireSameCurrency(other);
         return new Money(this.amount - other.amount, this.currency);
+    }
+
+    private void requireSameCurrency(Money other) {
+        if (other == null || other.currency != this.currency) {
+            throw new IllegalArgumentException("Cannot operate on Money with different currencies");
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Money)) return false;
+        Money money = (Money) o;
+        return amount.equals(money.amount) && currency == money.currency;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * amount.hashCode() + currency.hashCode();
     }
 }
